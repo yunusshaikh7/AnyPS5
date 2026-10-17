@@ -66,6 +66,7 @@ void SetImportWatch(const Context& context, ImportWatch watch);
 // (alignment and budget permitting), or null. Bytes at `address` are at `address - import->base` in
 // the import's buffer.
 const HostImport* HostImportFor(const Context& context, std::uint64_t address, std::size_t bytes);
+const HostImport* ExistingHostImportFor(const Context& context, std::uint64_t address, std::size_t bytes);
 void SetHostImportWindow(std::uint64_t bytes);
 // Tests: the window of one large registered range (64 MiB) and the import budget (0: the configured one).
 void SetHostImportRangeWindow(std::uint64_t bytes);
@@ -78,6 +79,7 @@ bool ImportMappedRanges(const Context& context, const GuestAllocations::Mapped& 
 // with the registry or making one (HostImportFor may take a registry lease): a hint for choices
 // made outside the device lock (a sampled texture's path, a dispatch's pre-sync); the path taken
 // re-checks with HostImportFor when it binds the import.
+bool HostImportOverlaps(const Context& context, std::uint64_t address, std::size_t bytes);
 bool HostImportCovers(const Context& context, std::uint64_t address, std::size_t bytes);
 struct RegisteredPiece {
     std::uint64_t address;
@@ -433,6 +435,7 @@ private:
     bool regionsSorted = false;
     bool regionsOverlap = false;
     std::vector<std::pair<std::uint64_t, std::uint64_t>> writes;
+    std::vector<std::pair<std::uint64_t, std::uint64_t>> reads;
     std::vector<std::pair<std::uint64_t, std::uint64_t>> readsOverBase;
     std::vector<std::pair<std::uint64_t, std::vector<std::byte>>> heapReferences;
     // UploadPrepare ran (regions are frozen); `uploaded` once UploadFinish ran.
